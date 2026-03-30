@@ -3,8 +3,6 @@ package com.yupi.openapi.model.dto.interfaceinfo;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 更新请求
@@ -13,8 +11,7 @@ import java.util.List;
  * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @Data
-public class InterfaceInfoPostUpdateRequest implements Serializable {
-
+public class InterfaceInfoUpdateRequest implements Serializable {
     /**
      * id
      */
@@ -36,4 +33,5 @@ public class InterfaceInfoPostUpdateRequest implements Serializable {
     private String responseHeader;
 
     private Integer status;
+
 }

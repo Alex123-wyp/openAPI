@@ -70,6 +70,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
 
     @Override
     public void validPost(Post post, boolean add) {
+
         if (post == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -87,6 +88,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         if (StringUtils.isNotBlank(content) && content.length() > 8192) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
         }
+
     }
 
     /**

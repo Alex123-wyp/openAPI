@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /**
  * 查询请求
@@ -16,7 +14,7 @@ import java.util.List;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class InterfaceInfoPostQueryRequest extends PageRequest implements Serializable {
+public class InterfaceInfoQueryRequest extends PageRequest implements Serializable {
 
     private Long id;
 
