@@ -1,6 +1,4 @@
 package com.yupi.openapi.controller;
-
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.openapi.annotation.AuthCheck;
@@ -8,7 +6,6 @@ import com.yupi.openapi.common.BaseResponse;
 import com.yupi.openapi.common.DeleteRequest;
 import com.yupi.openapi.common.ErrorCode;
 import com.yupi.openapi.common.ResultUtils;
-import com.yupi.openapi.constant.CommonConstant;
 import com.yupi.openapi.constant.UserConstant;
 import com.yupi.openapi.exception.BusinessException;
 import com.yupi.openapi.exception.ThrowUtils;
@@ -23,10 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 帖子接口
@@ -106,7 +101,7 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest) {
         if (interfaceInfoUpdateRequest == null || interfaceInfoUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -159,8 +154,19 @@ public class InterfaceInfoController {
         BeanUtils.copyProperties(interfaceInfoQueryRequest, interfaceInfoQuery);
         long current = interfaceInfoQueryRequest.getCurrent();
         long size = interfaceInfoQueryRequest.getPageSize();
+        String sortField = interfaceInfoQueryRequest.getSortField();
+        String sortOrder = interfaceInfoQueryRequest.getSortOrder();
+        String description = interfaceInfoQuery.getDescription();
 
+        //description need to be fuzzy query
+        interfaceInfoQuery.setDescription(null);
+        //Limit Crawler
+        if(size > 50){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Page size must not be greater than 50");
+        }
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
+        queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
+        queryWrapper.orderBy(StringUtils.isNotBlank(sortField), sortOrder.equals("asc"), sortField);
         Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size), queryWrapper);
         return ResultUtils.success(interfaceInfoPage);
 
