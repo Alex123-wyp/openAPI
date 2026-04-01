@@ -1,11 +1,14 @@
+import type { InitialState } from "./typings";
+
 /**
  * @see https://umijs.org/docs/max/access#access
  * */
 export default function access(
-  initialState: { currentUser?: API.CurrentUser } | undefined,
+  initialState: InitialState | undefined,
 ) {
-  const { currentUser } = initialState ?? {};
+  const { loginUser } = initialState ?? {};
   return {
-    canAdmin: currentUser && currentUser.access === 'admin',
+    canUser: loginUser,
+    canAdmin: loginUser?.userRole === 'admin',
   };
 }

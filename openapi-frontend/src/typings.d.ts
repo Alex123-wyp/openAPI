@@ -13,3 +13,8 @@ declare module '*.tiff';
 declare module 'omit.js';
 declare module 'numeral';
 declare module 'mockjs';
+
+
+export interface InitialState {
+    loginUser?: API.UserVO;
+}

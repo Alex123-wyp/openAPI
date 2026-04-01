@@ -95,7 +95,6 @@ public class InterfaceInfoController {
     }
 
     /**
-     * 更新（仅管理员）
      *
      * @param interfaceInfoUpdateRequest
      * @return

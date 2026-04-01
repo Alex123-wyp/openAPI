@@ -4,315 +4,216 @@ import type {
   ProDescriptionsItemProps,
 } from '@ant-design/pro-components';
 import {
-  FooterToolbar,
   PageContainer,
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
-import { Button, Drawer, type FormInstance, Input, message } from 'antd';
-import React, { useCallback, useRef, useState } from 'react';
-import { removeRule, rule } from '@/services/ant-design-pro/api';
-import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
+import { useIntl } from '@umijs/max';
+import { Drawer, Tag } from 'antd';
+import React, { useRef, useState } from 'react';
+import { listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
+
+type TableRequestParams = API.InterfaceInfoQueryRequest & {
+  current?: number;
+  pageSize?: number;
+};
+
+const statusMap: Record<number, { text: string; color: string }> = {
+  0: { text: 'Offline', color: 'default' },
+  1: { text: 'Online', color: 'success' },
+};
 
 const TableList: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
-
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
-
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
+  const [showDetail, setShowDetail] = useState(false);
+  const [currentRow, setCurrentRow] = useState<API.InterfaceInfo>();
   const intl = useIntl();
 
-  const [messageApi, contextHolder] = message.useMessage();
-
-  const { run: delRun, loading } = useRequest(removeRule, {
-    manual: true,
-    onSuccess: () => {
-      setSelectedRows([]);
-      actionRef.current?.reloadAndRest?.();
-
-      messageApi.success('Deleted successfully and will refresh soon');
-    },
-    onError: () => {
-      messageApi.error('Delete failed, please try again');
-    },
-  });
-
-  const columns: ProColumns<API.RuleListItem>[] = [
+  const columns: ProColumns<API.InterfaceInfo>[] = [
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.updateForm.ruleName.nameLabel"
-          defaultMessage="Rule name"
-        />
-      ),
+      title: 'ID',
+      dataIndex: 'id',
+      width: 80,
+      search: false,
+    },
+    {
+      title: 'Name',
       dataIndex: 'name',
-      render: (dom, entity) => {
-        return (
-          <a
-            onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
-            }}
-          >
-            {dom}
-          </a>
-        );
+      render: (_, entity) => (
+        <a
+          onClick={() => {
+            setCurrentRow(entity);
+            setShowDetail(true);
+          }}
+        >
+          {entity.name || '-'}
+        </a>
+      ),
+    },
+    {
+      title: 'URL',
+      dataIndex: 'url',
+      copyable: true,
+      ellipsis: true,
+    },
+    {
+      title: 'Method',
+      dataIndex: 'method',
+      search: false,
+      render: (_, entity) => {
+        const method = entity.method || 'UNKNOWN';
+        const color =
+          method === 'GET'
+            ? 'green'
+            : method === 'POST'
+              ? 'blue'
+              : method === 'PUT'
+                ? 'orange'
+                : method === 'DELETE'
+                  ? 'red'
+                  : 'default';
+
+        return <Tag color={color}>{method}</Tag>;
       },
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleDesc"
-          defaultMessage="Description"
-        />
-      ),
-      dataIndex: 'desc',
-      valueType: 'textarea',
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleCallNo"
-          defaultMessage="Number of service calls"
-        />
-      ),
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) =>
-        `${val}${intl.formatMessage({
-          id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
-        })}`,
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleStatus"
-          defaultMessage="Status"
-        />
-      ),
+      title: 'Status',
       dataIndex: 'status',
-      hideInForm: true,
-      valueEnum: {
-        0: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.default"
-              defaultMessage="Shut down"
-            />
-          ),
-          status: 'Default',
-        },
-        1: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.running"
-              defaultMessage="Running"
-            />
-          ),
-          status: 'Processing',
-        },
-        2: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.online"
-              defaultMessage="Online"
-            />
-          ),
-          status: 'Success',
-        },
-        3: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.abnormal"
-              defaultMessage="Abnormal"
-            />
-          ),
-          status: 'Error',
-        },
+      search: false,
+      render: (_, entity) => {
+        const value = entity.status ?? -1;
+        const status = statusMap[value];
+
+        if (!status) {
+          return <Tag>{value}</Tag>;
+        }
+
+        return <Tag color={status.color}>{status.text}</Tag>;
       },
     },
     {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleUpdatedAt"
-          defaultMessage="Last scheduled time"
-        />
-      ),
-      sorter: true,
-      dataIndex: 'updatedAt',
+      title: 'Description',
+      dataIndex: 'description',
+      valueType: 'textarea',
+      ellipsis: true,
+    },
+    {
+      title: 'User ID',
+      dataIndex: 'userId',
+      search: false,
+    },
+    {
+      title: 'Updated Time',
+      dataIndex: 'updateTime',
       valueType: 'dateTime',
-      formItemRender: (
-        item: ProColumns<API.RuleListItem>,
-        {
-          defaultRender,
-          ...rest
-        }: {
-          defaultRender: (
-            item: ProColumns<API.RuleListItem>,
-          ) => React.ReactNode;
-        },
-        form: FormInstance,
-      ) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
-    },
-    {
-      title: (
-        <FormattedMessage
-          id="pages.searchTable.titleOption"
-          defaultMessage="Operating"
-        />
-      ),
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <UpdateForm
-          trigger={
-            <a>
-              <FormattedMessage
-                id="pages.searchTable.config"
-                defaultMessage="Configuration"
-              />
-            </a>
-          }
-          key="config"
-          onOk={actionRef.current?.reload}
-          values={record}
-        />,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          <FormattedMessage
-            id="pages.searchTable.subscribeAlert"
-            defaultMessage="Subscribe to alerts"
-          />
-        </a>,
-      ],
+      search: false,
+      sorter: true,
     },
   ];
 
-  /**
-   *  Delete node
-   * @zh-CN 删除节点
-   *
-   * @param selectedRows
-   */
-  const handleRemove = useCallback(
-    async (selectedRows: API.RuleListItem[]) => {
-      if (!selectedRows?.length) {
-        messageApi.warning('请选择删除项');
-
-        return;
-      }
-
-      await delRun({
-        data: {
-          key: selectedRows.map((row) => row.key),
-        },
-      });
+  const detailColumns: ProDescriptionsItemProps<API.InterfaceInfo>[] = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
     },
-    [delRun, messageApi.warning],
-  );
+    {
+      title: 'Name',
+      dataIndex: 'name',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      valueType: 'textarea',
+    },
+    {
+      title: 'URL',
+      dataIndex: 'url',
+      copyable: true,
+    },
+    {
+      title: 'Method',
+      dataIndex: 'method',
+    },
+    {
+      title: 'Request Header',
+      dataIndex: 'requestHeader',
+      valueType: 'textarea',
+    },
+    {
+      title: 'Response Header',
+      dataIndex: 'responseHeader',
+      valueType: 'textarea',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+    },
+    {
+      title: 'User ID',
+      dataIndex: 'userId',
+    },
+    {
+      title: 'Create Time',
+      dataIndex: 'createTime',
+      valueType: 'dateTime',
+    },
+    {
+      title: 'Update Time',
+      dataIndex: 'updateTime',
+      valueType: 'dateTime',
+    },
+  ];
 
   return (
     <PageContainer>
-      {contextHolder}
-      <ProTable<API.RuleListItem, API.PageParams>
+      
+      <ProTable<API.InterfaceInfo, TableRequestParams>
         headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
+          id: 'menu.list.table-list',
+          defaultMessage: 'Interface Info',
         })}
         actionRef={actionRef}
-        rowKey="key"
+        rowKey="id"
         search={{
           labelWidth: 120,
         }}
-        toolBarRender={() => [
-          <CreateForm key="create" reload={actionRef.current?.reload} />,
-        ]}
-        request={rule}
-        columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
-      />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage
-                id="pages.searchTable.chosen"
-                defaultMessage="Chosen"
-              />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage
-                id="pages.searchTable.item"
-                defaultMessage="项"
-              />
-              &nbsp;&nbsp;
-              <span>
-                <FormattedMessage
-                  id="pages.searchTable.totalServiceCalls"
-                  defaultMessage="Total number of service calls"
-                />{' '}
-                {selectedRowsState.reduce(
-                  (pre, item) => pre + (item.callNo ?? 0),
-                  0,
-                )}{' '}
-                <FormattedMessage
-                  id="pages.searchTable.tenThousand"
-                  defaultMessage="万"
-                />
-              </span>
-            </div>
-          }
-        >
-          <Button
-            loading={loading}
-            onClick={() => {
-              handleRemove(selectedRowsState);
-            }}
-          >
-            <FormattedMessage
-              id="pages.searchTable.batchDeletion"
-              defaultMessage="Batch deletion"
-            />
-          </Button>
-          <Button type="primary">
-            <FormattedMessage
-              id="pages.searchTable.batchApproval"
-              defaultMessage="Batch approval"
-            />
-          </Button>
-        </FooterToolbar>
-      )}
+        request={async (params, sorter) => {
+          const sortField = Object.keys(sorter ?? {})[0];
+          const rawSortOrder = sortField
+            ? (sorter as Record<string, 'ascend' | 'descend' | undefined>)[sortField]
+            : undefined;
+          const sortOrder =
+            rawSortOrder === 'descend'
+              ? 'desc'
+              : rawSortOrder === 'ascend'
+                ? 'asc'
+                : undefined;
 
+          const res = await listInterfaceInfoByPageUsingPost({
+            current: params.current,
+            pageSize: params.pageSize,
+            id: params.id,
+            name: params.name,
+            description: params.description,
+            method: params.method,
+            status: params.status,
+            url: params.url,
+            userId: params.userId,
+            sortField,
+            sortOrder,
+          });
+
+          return {
+            data: res.data?.records ?? [],
+            success: true,
+            total: res.data?.total ?? 0,
+          };
+        }}
+
+        columns={columns}
+      />
       <Drawer
-        size={600}
+        width={720}
         open={showDetail}
         onClose={() => {
           setCurrentRow(undefined);
@@ -320,17 +221,18 @@ const TableList: React.FC = () => {
         }}
         closable={false}
       >
-        {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
+        {currentRow?.id !== undefined && (
+          <ProDescriptions<API.InterfaceInfo>
             column={2}
-            title={currentRow?.name}
+            title={currentRow.name || 'Interface Detail'}
             request={async () => ({
-              data: currentRow || {},
+              data: currentRow,
+              success: true,
             })}
             params={{
-              id: currentRow?.name,
+              id: currentRow.id,
             }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
+            columns={detailColumns}
           />
         )}
       </Drawer>
