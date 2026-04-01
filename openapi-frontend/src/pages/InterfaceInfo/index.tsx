@@ -8,10 +8,15 @@ import {
   ProDescriptions,
   ProTable,
 } from '@ant-design/pro-components';
-import { useIntl } from '@umijs/max';
-import { Drawer, Tag } from 'antd';
+import { useIntl, useRequest } from '@umijs/max';
+import { Drawer, Popconfirm, Tag, message } from 'antd';
 import React, { useRef, useState } from 'react';
-import { listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
+import {
+  deleteInterfaceInfoUsingPost,
+  listInterfaceInfoByPageUsingPost,
+} from '@/services/openapi-backend/interfaceInfoController';
+import CreateForm from '../table-list/components/CreateForm';
+import UpdateForm from '../table-list/components/UpdateForm';
 
 type TableRequestParams = API.InterfaceInfoQueryRequest & {
   current?: number;
@@ -20,16 +25,33 @@ type TableRequestParams = API.InterfaceInfoQueryRequest & {
 
 const statusMap: Record<number, { text: string; color: string }> = {
   0: { text: 'Offline', color: 'default' },
-  1: { text: 'Online', color: 'success' },
+  1: { text: 'Online', color: 'success' },  
 };
 
-const TableList: React.FC = () => {
+
+
+const InterfaceInfo: React.FC = () => {
   const actionRef = useRef<ActionType | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [currentRow, setCurrentRow] = useState<API.InterfaceInfo>();
   const intl = useIntl();
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const columns: ProColumns<API.InterfaceInfo>[] = [
+  const { run: runDelete, loading: deleteLoading } = useRequest(
+    deleteInterfaceInfoUsingPost,
+    {
+      manual: true,
+      onSuccess: () => {
+        messageApi.success('Deleted successfully');
+        actionRef.current?.reload?.();
+      },
+      onError: () => {
+        messageApi.error('Delete failed, please try again!');
+      },
+    },
+  );
+
+  const columns: ProColumns<API.InterfaceInfo>[] = [  
     {
       title: 'ID',
       dataIndex: 'id',
@@ -49,6 +71,13 @@ const TableList: React.FC = () => {
           {entity.name || '-'}
         </a>
       ),
+      formItemProps: {
+        rules: [{
+          required: true,
+          message: "Name required!"
+        }]
+      },
+      
     },
     {
       title: 'URL',
@@ -109,6 +138,37 @@ const TableList: React.FC = () => {
       search: false,
       sorter: true,
     },
+    {
+      title: 'Operation',
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <UpdateForm
+          trigger={<a>Edit</a>}
+          key="edit"
+          onOk={actionRef.current?.reload}
+          values={record}
+          columns={columns}
+        />,
+        <Popconfirm
+          key="delete"
+          title="Delete this interface?"
+          okButtonProps={{ loading: deleteLoading }}
+          onConfirm={async () => {
+            if (record.id === undefined) {
+              messageApi.error('Missing interface id');
+              return;
+            }
+            await runDelete({ id: record.id });
+          }}
+        >
+
+        {/*Popconfirm component use children component <a>Delete</a> as a trigger */}
+        
+          <a>Delete</a>
+        </Popconfirm>,
+      ],
+    },
   ];
 
   const detailColumns: ProDescriptionsItemProps<API.InterfaceInfo>[] = [
@@ -156,16 +216,20 @@ const TableList: React.FC = () => {
       title: 'Create Time',
       dataIndex: 'createTime',
       valueType: 'dateTime',
+      hideInForm: true,
     },
     {
       title: 'Update Time',
       dataIndex: 'updateTime',
       valueType: 'dateTime',
+      hideInForm: true,
+
     },
   ];
 
   return (
     <PageContainer>
+      {contextHolder}
       
       <ProTable<API.InterfaceInfo, TableRequestParams>
         headerTitle={intl.formatMessage({
@@ -177,6 +241,9 @@ const TableList: React.FC = () => {
         search={{
           labelWidth: 120,
         }}
+        toolBarRender={() => [
+          <CreateForm columns={columns} reload={actionRef.current?.reload} />,
+        ]}
         request={async (params, sorter) => {
           const sortField = Object.keys(sorter ?? {})[0];
           const rawSortOrder = sortField
@@ -190,17 +257,18 @@ const TableList: React.FC = () => {
                 : undefined;
 
           const res = await listInterfaceInfoByPageUsingPost({
-            current: params.current,
-            pageSize: params.pageSize,
-            id: params.id,
-            name: params.name,
-            description: params.description,
-            method: params.method,
-            status: params.status,
-            url: params.url,
-            userId: params.userId,
-            sortField,
-            sortOrder,
+            // current: params.current,
+            // pageSize: params.pageSize,
+            // id: params.id,
+            // name: params.name,
+            // description: params.description,
+            // method: params.method,
+            // status: params.status,
+            // url: params.url,
+            // userId: params.userId,
+            // sortField,
+            // sortOrder,
+            ...params
           });
 
           return {
@@ -236,8 +304,9 @@ const TableList: React.FC = () => {
           />
         )}
       </Drawer>
+      {/* <CreateForm columns={columns} /> */}
     </PageContainer>
   );
 };
 
-export default TableList;
+export default InterfaceInfo;
