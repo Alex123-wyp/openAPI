@@ -1,33 +1,44 @@
 import { PlusOutlined } from '@ant-design/icons';
 import {
   type ActionType,
-  ModalForm,
-  ProFormText,
-  ProFormTextArea,
+  ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
-import { Button, message } from 'antd';
+import { Button, Modal, message } from 'antd';
+import React, { useState } from 'react';
 import type { FC } from 'react';
-import { addRule } from '@/services/ant-design-pro/api';
+import type { ProColumns } from '@ant-design/pro-components';
+import { addInterfaceInfoUsingPost } from '@/services/openapi-backend/interfaceInfoController';
 
 interface CreateFormProps {
   reload?: ActionType['reload'];
+  columns: ProColumns<API.InterfaceInfo>[];
+  // visible: boolean;
 }
 
-const CreateForm: FC<CreateFormProps> = (props) => {
-  const { reload } = props;
+  /**
+   * CreateForm is a function component, it receives props whose type is CreateFormProps
+   * */
 
+const CreateForm: FC<CreateFormProps> = (props) => {
+
+  const { reload } = props;
+  const { columns } = props;
+  const [open, setOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+
+  // const { visible } = props;
+
   /**
    * @en-US International configuration
    * @zh-CN 国际化配置
    * */
-  const intl = useIntl();
-
-  const { run, loading } = useRequest(addRule, {
+  const { run, loading } = useRequest(addInterfaceInfoUsingPost, {
     manual: true,
     onSuccess: () => {
       messageApi.success('Added successfully');
+      setOpen(false);
       reload?.();
     },
     onError: () => {
@@ -35,44 +46,71 @@ const CreateForm: FC<CreateFormProps> = (props) => {
     },
   });
 
+
+  const formColumns = columns.filter((column) => {
+    const dataIndex = Array.isArray(column.dataIndex)
+      ? column.dataIndex[0]
+      : column.dataIndex;
+
+    return !['id', 'userId', 'createTime', 'updateTime', 'option'].includes(
+      String(dataIndex ?? ''),
+    );
+  });
+
+  const headerColumns: ProColumns<API.InterfaceInfoAddRequest>[] = [
+    {
+      title: 'Request Header',
+      dataIndex: 'requestHeader',
+      valueType: 'textarea',
+    },
+    {
+      title: 'Response Header',
+      dataIndex: 'responseHeader',
+      valueType: 'textarea',
+    },
+  ];
+
+  const createColumns = [
+    ...formColumns,
+    ...headerColumns,
+  ] as ProColumns<API.InterfaceInfoAddRequest>[];
+
   return (
     <>
       {contextHolder}
-      <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
-        trigger={
-          <Button type="primary" icon={<PlusOutlined />}>
-            <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>
-        }
-        width="400px"
-        modalProps={{ okButtonProps: { loading } }}
-        onFinish={async (value) => {
-          await run({ data: value as API.RuleListItem });
-
-          return true;
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={() => {
+          setOpen(true);
         }}
       >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
+        <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
+      </Button>
+
+      <Modal
+        open={open}
+        onCancel={() => {
+          setOpen(false);
+        }}
+        footer={null}
+        destroyOnHidden
+      >
+        <ProTable<API.InterfaceInfoAddRequest>
+          type="form"
+          columns={createColumns}
+          ghost
+          loading={loading}
+          onSubmit={async (value) => {
+            const payload: API.InterfaceInfoAddRequest = {
+              ...value
+            };
+            await run(payload);
+          }}
         />
-        <ProFormTextArea width="md" name="desc" />
-      </ModalForm>
+      </Modal>
+
+
     </>
   );
 };
