@@ -1,4 +1,4 @@
-package com.yupi.openapipublicinterface.modal;
+package com.yupi.openapiclientsdk.modal;
 
 
 import lombok.Data;
