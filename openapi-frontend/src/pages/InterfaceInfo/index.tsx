@@ -9,11 +9,13 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { useIntl, useRequest } from '@umijs/max';
-import { Drawer, Popconfirm, Tag, message } from 'antd';
+import { Drawer, Popconfirm, Tag, message, Button} from 'antd';
 import React, { useRef, useState } from 'react';
 import {
   deleteInterfaceInfoUsingPost,
   listInterfaceInfoByPageUsingPost,
+  offlineInterfaceInfoUsingPost,
+  onlineInterfaceInfoUsingPost,
 } from '@/services/openapi-backend/interfaceInfoController';
 import CreateForm from '../table-list/components/CreateForm';
 import UpdateForm from '../table-list/components/UpdateForm';
@@ -37,6 +39,7 @@ const InterfaceInfo: React.FC = () => {
   const intl = useIntl();
   const [messageApi, contextHolder] = message.useMessage();
 
+  //take returned run and store it in a local variable named runDelete
   const { run: runDelete, loading: deleteLoading } = useRequest(
     deleteInterfaceInfoUsingPost,
     {
@@ -47,6 +50,34 @@ const InterfaceInfo: React.FC = () => {
       },
       onError: () => {
         messageApi.error('Delete failed, please try again!');
+      },
+    },
+  );
+
+  const { run: runOnline, loading: onlineLoading } = useRequest(
+    onlineInterfaceInfoUsingPost,
+    {
+      manual: true,
+      onSuccess: () => {
+        messageApi.success('Published successfully');
+        actionRef.current?.reload?.();
+      },
+      onError: () => {
+        messageApi.error('Publish failed, please try again!');
+      },
+    },
+  );
+
+    const { run: runOffline, loading: offlineLoading } = useRequest(
+    offlineInterfaceInfoUsingPost,
+    {
+      manual: true,
+      onSuccess: () => {
+        messageApi.success('Published successfully');
+        actionRef.current?.reload?.();
+      },
+      onError: () => {
+        messageApi.error('Offline failed, please try again!');
       },
     },
   );
@@ -150,9 +181,51 @@ const InterfaceInfo: React.FC = () => {
           values={record}
           columns={columns}
         />,
+
+
+      //Publish button
+        record.status === 0 ? 
+        <Popconfirm
+          key="publish"
+          title="Publish this interface?"
+          okButtonProps={{ loading: onlineLoading }}
+          onConfirm={async () => {
+            if (record.id === undefined) {
+              messageApi.error('Missing interface id');
+              return;
+            }
+            await runOnline({ id: record.id });
+          }}
+        >
+
+        {/*Popconfirm component use children component <a>Publish</a> as a trigger */}
+          <a>Publish</a>
+        </Popconfirm> : null,
+
+         //offline button
+        record.status === 1 ? 
+        <Popconfirm
+          key="offline"
+          title="Offline this interface?"
+          okButtonProps={{ loading: offlineLoading }}
+          onConfirm={async () => {
+            if (record.id === undefined) {
+              messageApi.error('Missing interface id');
+              return;
+            }
+            await runOffline({ id: record.id });
+          }}
+        >
+
+        {/*Popconfirm component use children component <a>Offline</a> as a trigger */}
+          <a>Offline</a>
+        </Popconfirm> : null,
+
+        //Delete button
         <Popconfirm
           key="delete"
           title="Delete this interface?"
+          color="red"
           okButtonProps={{ loading: deleteLoading }}
           onConfirm={async () => {
             if (record.id === undefined) {
@@ -165,8 +238,10 @@ const InterfaceInfo: React.FC = () => {
 
         {/*Popconfirm component use children component <a>Delete</a> as a trigger */}
         
-          <a>Delete</a>
+          <Button danger>Delete</Button>
         </Popconfirm>,
+
+        
       ],
     },
   ];

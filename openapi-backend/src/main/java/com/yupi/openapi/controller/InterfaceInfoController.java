@@ -2,10 +2,7 @@ package com.yupi.openapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yupi.openapi.annotation.AuthCheck;
-import com.yupi.openapi.common.BaseResponse;
-import com.yupi.openapi.common.DeleteRequest;
-import com.yupi.openapi.common.ErrorCode;
-import com.yupi.openapi.common.ResultUtils;
+import com.yupi.openapi.common.*;
 import com.yupi.openapi.constant.UserConstant;
 import com.yupi.openapi.exception.BusinessException;
 import com.yupi.openapi.exception.ThrowUtils;
@@ -14,8 +11,10 @@ import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.yupi.openapi.model.entity.InterfaceInfo;
 import com.yupi.openapi.model.entity.User;
+import com.yupi.openapi.model.enums.InterfaceInfoStatusEnum;
 import com.yupi.openapi.service.InterfaceInfoService;
 import com.yupi.openapi.service.UserService;
+import com.yupi.openapiclientsdk.client.OpenApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -24,14 +23,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 帖子接口
+ * Interface information Controller Layter
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
+ * @author yupewan(Alex Wang)
  */
-@RestController
 @RequestMapping("/interfaceInfo")
 @Slf4j
+@RestController
 public class InterfaceInfoController {
 
     @Resource
@@ -39,6 +37,9 @@ public class InterfaceInfoController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private OpenApiClient openApiClient;
 
     // region 增删改查
 
@@ -51,6 +52,7 @@ public class InterfaceInfoController {
      */
 
     @PostMapping("/add")
+    @AuthCheck(mustRole = "admin")
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
         if (interfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -77,6 +79,7 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/delete")
+    @AuthCheck(mustRole = "admin")
     public BaseResponse<Boolean> deleteInterfaceInfo(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -100,6 +103,8 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/update")
+    @AuthCheck(mustRole = "admin")
+
 //    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest) {
         if (interfaceInfoUpdateRequest == null || interfaceInfoUpdateRequest.getId() <= 0) {
@@ -143,7 +148,7 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/list/page")
-//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<InterfaceInfo>> listInterfaceInfoByPage(@RequestBody InterfaceInfoQueryRequest interfaceInfoQueryRequest) {
 
         if(interfaceInfoQueryRequest == null){
@@ -170,6 +175,60 @@ public class InterfaceInfoController {
         return ResultUtils.success(interfaceInfoPage);
 
     }
+
+
+    /**
+     * Publish Interface Function
+     * @param idRequest
+     * @return
+     */
+    @PostMapping("/online")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest) {
+        if(idRequest == null || idRequest.getId() <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+
+        //Check if the interfaces exists
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        //Admin only
+        InterfaceInfo interfaceInfo = new InterfaceInfo();
+        interfaceInfo.setId(id);
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.ONLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+    }
+
+
+    /**
+     * Offline Interface Function
+     * @param idRequest
+     * @return
+     */
+    @PostMapping("/offline")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest) {
+
+
+        if(idRequest == null || idRequest.getId() <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long id = idRequest.getId();
+        //Admin only
+        InterfaceInfo interfaceInfo = new InterfaceInfo();
+        interfaceInfo.setId(id);
+        interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
+        boolean result = interfaceInfoService.updateById(interfaceInfo);
+        return ResultUtils.success(result);
+
+    }
+
+
+
 
 
 }

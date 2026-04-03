@@ -9,7 +9,6 @@ import com.yupi.openapi.model.entity.Post;
  */
 public interface InterfaceInfoService extends IService<InterfaceInfo> {
 
-
     void validInterfaceInfo(InterfaceInfo interfaceInfo, boolean add);
 
 }
