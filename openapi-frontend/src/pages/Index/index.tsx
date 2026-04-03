@@ -1,8 +1,8 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { useModel } from '@umijs/max';
 import React, { useEffect, useState } from 'react';
-import { Avatar, Button, List, Skeleton } from 'antd';
-import { getInterfaceInfoByIdUsingGet, listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
+import { Button, List } from 'antd';
+import { listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
 
 /**
  * 
@@ -10,21 +10,18 @@ import { getInterfaceInfoByIdUsingGet, listInterfaceInfoByPageUsingPost } from '
  */
 
 const Main: React.FC = () => {
-
+  
   type ListItem = API.InterfaceInfo & {
     loading?: boolean
   }
 
   const PAGE_SIZE = 3;
-
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ListItem[]>([]);
   const [list, setList] = useState<API.InterfaceInfo[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState(1);
-  
-
 
   const fetchData = async (current: number, pageSize: number) => {
       
@@ -68,6 +65,7 @@ const Main: React.FC = () => {
 
     const loadMore =
     !initLoading && !loading ? (
+      
       <div
         style={{
           textAlign: 'center',
@@ -76,7 +74,9 @@ const Main: React.FC = () => {
           lineHeight: '32px',
         }}
       >
+
         <Button onClick={onLoadMore}>loading more</Button>
+
       </div>
     ) : null;
 
@@ -92,19 +92,19 @@ const Main: React.FC = () => {
       dataSource={list}
       renderItem={(item) => (
         <List.Item
-          actions={[<a key="list-loadmore-more">more</a>]}
         >
             <List.Item.Meta
-              title={<a href="https://ant.design">{item.name}</a>}
+              title={<a key={item.id} href={`/interface_info/${item.id}`}>{item.name}</a>}
               description={item.description}
             />
             <div>content</div>
         </List.Item>
     
   )}/>
-
-        </PageContainer>
+  
+    </PageContainer>
 )
 }
+
 export default Main;
 

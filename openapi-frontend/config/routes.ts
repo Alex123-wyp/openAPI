@@ -11,11 +11,21 @@
  * @doc https://umijs.org/docs/guides/routes
  */
 export default [
-    {
+  //Normal user page
+  {
     path: '/',
-    name: 'welcome',
+    name: 'Main Page',
     icon: 'smile',
     component: './Index',
+  },
+
+  {
+    path: '/interface_info/:id',
+    name: 'welcome',
+    icon: 'smile',
+    component: './InterfaceInfo',
+    hideInMenu: true
+  
   },
 
   {
@@ -45,13 +55,10 @@ export default [
     ],
   },
 
-  // {
-  //   path: '/',
-  //   redirect: '/welcome',
-  // },
   {
     component: '404',
     layout: false,
     path: './*',
   },
+
 ];
