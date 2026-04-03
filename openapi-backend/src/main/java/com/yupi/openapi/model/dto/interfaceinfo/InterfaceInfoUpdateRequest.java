@@ -34,4 +34,5 @@ public class InterfaceInfoUpdateRequest implements Serializable {
 
     private Integer status;
 
+
 }
