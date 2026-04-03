@@ -168,6 +168,7 @@ public class InterfaceInfoController {
         if(size > 50){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Page size must not be greater than 50");
         }
+
         QueryWrapper<InterfaceInfo> queryWrapper = new QueryWrapper<>(interfaceInfoQuery);
         queryWrapper.like(StringUtils.isNotBlank(description), "description", description);
         queryWrapper.orderBy(StringUtils.isNotBlank(sortField), sortOrder.equals("asc"), sortField);
