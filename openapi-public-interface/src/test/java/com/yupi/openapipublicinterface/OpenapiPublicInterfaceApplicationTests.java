@@ -21,7 +21,4 @@ class OpenapiPublicInterfaceApplicationTests {
         System.out.println(result);
         System.out.println(userNameBypost);
     }
-
-
-
 }

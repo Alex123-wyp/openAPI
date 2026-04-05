@@ -1,8 +1,8 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { useMatch, useModel, useParams } from '@umijs/max';
 import React, { useEffect, useState } from 'react';
-import { Button, List, Card, Descriptions, Form, Input } from 'antd';
-import { getInterfaceInfoByIdUsingGet, listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
+import { Button, List, Card, Descriptions, Form, Input, message, Divider } from 'antd';
+import { getInterfaceInfoByIdUsingGet, invokeInterfaceInfoUsingPost, listInterfaceInfoByPageUsingPost } from '@/services/openapi-backend/interfaceInfoController';
 
 
 /**
@@ -16,18 +16,48 @@ const Main: React.FC = () => {
   const PAGE_SIZE = 3;
   const [initLoading, setInitLoading] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [invokeLoading, setInvokeLoading] = useState(false);
   const [data, setData] = useState<API.InterfaceInfo>();
+  const [invokeRes, setInvokeRes] = useState<any>();
+  
+  
+
+
+  //Read the dynamic route parameters from the current URL
   const params = useParams();
+
   const fetchData = async (params: API.getInterfaceInfoByIdUsingGETParams) => {
       
       const res = await getInterfaceInfoByIdUsingGet(params);
-      return res.data
+      return res.data;
 
   }
 
+  const onFinish =async (values: any) => {
+    
+        setInvokeLoading(true);
+
+        if(!params.id){
+            message.error("Interface not exists");
+            return;
+        }
+        try{
+            const res = await invokeInterfaceInfoUsingPost({
+            ...values,
+            id: params.id
+        });
+            message.success("Request success! ");
+            setInvokeRes(res.data);
+
+        }catch(error: any){
+            message.error("Request Fail! " + error.message);
+        }
+        setInvokeLoading(false);
+    }
+
   useEffect(() => {
     
-    fetchData(params).then((res) => {
+      fetchData(params).then((res) => {
       const results = Array.isArray(res) ? res : null;
       setInitLoading(false);
       setData(res);
@@ -70,31 +100,32 @@ const Main: React.FC = () => {
         }
         </Card>
 
-        <Card>
+        <Divider/>
 
+        <Card title="Online Test">
             <Form
             name='invoke'
             layout= 'vertical'
+            onFinish={onFinish}
             >
-               <Form.Item name="requestParams" label="Params" >
+               <Form.Item name="userRequestParams" label="Params" >
                     <Input.TextArea rows={6} />
                 </Form.Item>
 
                 <Form.Item  name="submit" >
                     
-                    <Button type="primary">
-                        
+                    <Button type="primary" htmlType="submit">
                         Test
-                        
-                    </Button>                    
+                    </Button>                   
                     
                 </Form.Item>
-                
+        
+            </Form>    
+        </Card>
+        <Divider/>
 
-
-            </Form>
-            
-            
+        <Card title="Response" loading={invokeLoading}>
+            {invokeRes}
         </Card>
   
     </PageContainer>

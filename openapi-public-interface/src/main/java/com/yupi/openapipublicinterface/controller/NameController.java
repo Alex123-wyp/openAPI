@@ -47,7 +47,6 @@ public class NameController {
         if (Math.abs(currentTimestamp - requestTimestamp) > 5 * 60) {
             throw new RuntimeException("Timestamp exceeds 5 minutes");
         }
-
         String serverSign = SignUtils.genSign(body, "sk_954ee91d44875f13f21610af5432f59ba089db9d8c5a4ed8");
         if(!serverSign.equals(sign)){
             throw new RuntimeException("Invalid sign");
