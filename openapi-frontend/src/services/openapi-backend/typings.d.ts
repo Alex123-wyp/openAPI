@@ -29,6 +29,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseObject_ = {
+    code?: number;
+    data?: Record<string, any>;
+    message?: string;
+  };
+
   type BaseResponsePageInterfaceInfo_ = {
     code?: number;
     data?: PageInterfaceInfo_;
@@ -126,6 +132,8 @@ declare namespace API {
     name?: string;
     /** request header */
     requestHeader?: string;
+    /** request params */
+    requestParams?: string;
     /** response header */
     responseHeader?: string;
     /** status */
@@ -143,8 +151,17 @@ declare namespace API {
     method?: string;
     name?: string;
     requestHeader?: string;
+    requestParams?: string;
     responseHeader?: string;
     url?: string;
+  };
+
+  type InterfaceInfoInvokeRequest = {
+    id?: number;
+    requestHeader?: string;
+    responseHeader?: string;
+    status?: number;
+    userRequestParams?: string;
   };
 
   type InterfaceInfoQueryRequest = {
@@ -156,6 +173,7 @@ declare namespace API {
     name?: string;
     pageSize?: number;
     requestHeader?: string;
+    requestParams?: string;
     responseHeader?: string;
     sortField?: string;
     sortOrder?: string;
@@ -170,6 +188,7 @@ declare namespace API {
     method?: string;
     name?: string;
     requestHeader?: string;
+    requestParams?: string;
     responseHeader?: string;
     status?: number;
     url?: string;

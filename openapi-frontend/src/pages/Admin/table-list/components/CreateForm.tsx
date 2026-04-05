@@ -3,7 +3,7 @@ import {
   type ActionType,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
+import { FormattedMessage, useRequest } from '@umijs/max';
 import { Button, Modal, message } from 'antd';
 import React, { useState } from 'react';
 import type { FC } from 'react';
@@ -12,7 +12,7 @@ import { addInterfaceInfoUsingPost } from '@/services/openapi-backend/interfaceI
 
 interface CreateFormProps {
   reload?: ActionType['reload'];
-  columns: ProColumns<API.InterfaceInfo>[];
+  columns: ProColumns<API.InterfaceInfoAddRequest>[];
   // visible: boolean;
 }
 
@@ -47,33 +47,7 @@ const CreateForm: FC<CreateFormProps> = (props) => {
   });
 
 
-  const formColumns = columns.filter((column) => {
-    const dataIndex = Array.isArray(column.dataIndex)
-      ? column.dataIndex[0]
-      : column.dataIndex;
 
-    return !['id', 'userId', 'createTime', 'updateTime', 'option'].includes(
-      String(dataIndex ?? ''),
-    );
-  });
-
-  const headerColumns: ProColumns<API.InterfaceInfoAddRequest>[] = [
-    {
-      title: 'Request Header',
-      dataIndex: 'requestHeader',
-      valueType: 'textarea',
-    },
-    {
-      title: 'Response Header',
-      dataIndex: 'responseHeader',
-      valueType: 'textarea',
-    },
-  ];
-
-  const createColumns = [
-    ...formColumns,
-    ...headerColumns,
-  ] as ProColumns<API.InterfaceInfoAddRequest>[];
 
   return (
     <>
@@ -98,8 +72,7 @@ const CreateForm: FC<CreateFormProps> = (props) => {
       >
         <ProTable<API.InterfaceInfoAddRequest>
           type="form"
-          columns={createColumns}
-          ghost
+          columns={columns}
           loading={loading}
           onSubmit={async (value) => {
             const payload: API.InterfaceInfoAddRequest = {

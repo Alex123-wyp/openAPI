@@ -66,12 +66,12 @@ public class User implements Serializable {
     private String userRole;
 
     /**
-     * access key
+     * Signature: access key
      */
     private String accessKey;
 
     /**
-     * secret key
+     * Signature: secret key
      */
     private String secretKey;
 

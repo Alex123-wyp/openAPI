@@ -1,12 +1,14 @@
 package com.yupi.openapi.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
 import com.yupi.openapi.annotation.AuthCheck;
 import com.yupi.openapi.common.*;
 import com.yupi.openapi.constant.UserConstant;
 import com.yupi.openapi.exception.BusinessException;
 import com.yupi.openapi.exception.ThrowUtils;
 import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoAddRequest;
+import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.yupi.openapi.model.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.yupi.openapi.model.entity.InterfaceInfo;
@@ -18,6 +20,7 @@ import com.yupi.openapiclientsdk.client.OpenApiClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +43,12 @@ public class InterfaceInfoController {
 
     @Resource
     private OpenApiClient openApiClient;
+
+
+    @Value("${openapi.client.gateway-host}")
+    private String gatewayHost;
+
+
 
     // region 增删改查
 
@@ -225,11 +234,43 @@ public class InterfaceInfoController {
         interfaceInfo.setStatus(InterfaceInfoStatusEnum.OFFLINE.getValue());
         boolean result = interfaceInfoService.updateById(interfaceInfo);
         return ResultUtils.success(result);
-
     }
 
+    /**
+     * Test Interface Function
+     */
+
+    @PostMapping("/invoke")
+    public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request) {
+
+        if(interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        long id = interfaceInfoInvokeRequest.getId();
+        String userRequestParams = interfaceInfoInvokeRequest.getUserRequestParams();
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if(oldInterfaceInfo == null){
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        if(oldInterfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Interface is offline");
+        }
+
+        //Check the authentication of the login user
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+        OpenApiClient tempApiClient = new OpenApiClient(gatewayHost, accessKey, secretKey);
+        //Convert json to java object
+        Gson gson = new Gson();
+        //User.class represents the Class Object of User type, it represents the metadata about the class at runtime, it is runtime class description,
+        //fromJson needs runtime type info
+        com.yupi.openapiclientsdk.modal.User user = gson.fromJson(userRequestParams, com.yupi.openapiclientsdk.modal.User.class);
+        String usernameByPost = tempApiClient.getUserNameByPost(user);
+        return ResultUtils.success(usernameByPost);
 
 
-
+    }
 
 }

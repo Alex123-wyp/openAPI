@@ -137,6 +137,48 @@ const InterfaceInfo: React.FC = () => {
       },
     },
     {
+      title: 'Request Params',
+      dataIndex: 'requestParams',
+      valueType: 'textarea',
+      search: false,
+      ellipsis: true,
+      formItemProps: {
+        rules: [{
+          required: true,
+          message: 'Request params required!',
+        }],
+      },
+      hideInTable: true
+    },
+    {
+      title: 'Request Header',
+      dataIndex: 'requestHeader',
+      valueType: 'textarea',
+      search: false,
+      ellipsis: true,
+      formItemProps: {
+        rules: [{
+          required: true,
+          message: 'Request header required!',
+        }],
+      },
+      hideInTable: true
+    },
+    {
+      title: 'Respond Header',
+      dataIndex: 'responseHeader',
+      valueType: 'textarea',
+      search: false,
+      ellipsis: true,
+      formItemProps: {
+        rules: [{
+          required: true,
+          message: 'Respond header required!',
+        }],
+      },
+      hideInTable: true
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       search: false,
@@ -156,6 +198,7 @@ const InterfaceInfo: React.FC = () => {
       dataIndex: 'description',
       valueType: 'textarea',
       ellipsis: true,
+      hideInTable: true
     },
     {
       title: 'User ID',
@@ -168,6 +211,7 @@ const InterfaceInfo: React.FC = () => {
       valueType: 'dateTime',
       search: false,
       sorter: true,
+      hideInTable: true
     },
     {
       title: 'Operation',
@@ -246,6 +290,15 @@ const InterfaceInfo: React.FC = () => {
     },
   ];
 
+  const addFormColumns = columns.filter((column) => {
+      const dataIndex = Array.isArray(column.dataIndex)
+      ? column.dataIndex[0]
+      : column.dataIndex;
+    return !['id', 'userId', 'createTime', 'updateTime', 'option', 'status'].includes(
+      String(dataIndex ?? ''),  //If dataIndex is undefined or null, return ''
+    );
+  })
+
   const detailColumns: ProDescriptionsItemProps<API.InterfaceInfo>[] = [
     {
       title: 'ID',
@@ -268,6 +321,11 @@ const InterfaceInfo: React.FC = () => {
     {
       title: 'Method',
       dataIndex: 'method',
+    },
+    {
+      title: 'Request Params',
+      dataIndex: 'requestParams',
+      valueType: 'textarea',
     },
     {
       title: 'Request Header',
@@ -317,7 +375,7 @@ const InterfaceInfo: React.FC = () => {
           labelWidth: 120,
         }}
         toolBarRender={() => [
-          <CreateForm columns={columns} reload={actionRef.current?.reload} />,
+          <CreateForm columns={addFormColumns} reload={actionRef.current?.reload} />,
         ]}
         request={async (params, sorter) => {
           const sortField = Object.keys(sorter ?? {})[0];
@@ -332,17 +390,7 @@ const InterfaceInfo: React.FC = () => {
                 : undefined;
 
           const res = await listInterfaceInfoByPageUsingPost({
-            // current: params.current,
-            // pageSize: params.pageSize,
-            // id: params.id,
-            // name: params.name,
-            // description: params.description,
-            // method: params.method,
-            // status: params.status,
-            // url: params.url,
-            // userId: params.userId,
-            // sortField,
-            // sortOrder,
+
             ...params
           });
 

@@ -32,15 +32,20 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String name = interfaceInfo.getName();
+        String requestParams = interfaceInfo.getRequestParams();
 
         // When create for the first time, parameters must not be blank.
         if (add) {
-            ThrowUtils.throwIf(StringUtils.isAnyBlank(name), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isAnyBlank(name, requestParams), ErrorCode.PARAMS_ERROR);
         }
 
         // When name is not blank, the length must not be greater than 80.
         if (StringUtils.isNotBlank(name) && name.length() > 50) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Title length must not be less than 50");
+        }
+
+        if (requestParams != null && StringUtils.isBlank(requestParams)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Request params can not be blank");
         }
 
     }
