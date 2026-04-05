@@ -1,9 +1,8 @@
-
-import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
+import { useRequest } from '@umijs/max';
 import { Modal, message } from 'antd';
 import React, { cloneElement, useCallback, useState } from 'react';
 // import { updateRule } from '@/services/ant-design-pro/api';
-import {  ProTable} from '@ant-design/pro-components';
+import { ProTable } from '@ant-design/pro-components';
 import type { ProColumns } from '@ant-design/pro-components';
 import { updateInterfaceInfoUsingPost } from '@/services/openapi-backend/interfaceInfoController';
 
@@ -24,8 +23,6 @@ export type UpdateFormProps = {
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const { onOk, values, trigger, columns } = props;
-
-  const intl = useIntl();
 
   const [open, setOpen] = useState(false);
 
@@ -61,6 +58,19 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
     );
   });
 
+  const extraColumns: ProColumns<API.InterfaceInfoUpdateRequest>[] = [
+    {
+      title: 'Request Header',
+      dataIndex: 'requestHeader',
+      valueType: 'textarea',
+    },
+    {
+      title: 'Response Header',
+      dataIndex: 'responseHeader',
+      valueType: 'textarea',
+    },
+  ];
+
   // const onFinish = useCallback(
   //   async (values?: any) => {
   //     await run({ data: values });
@@ -87,7 +97,10 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       >
         <ProTable<API.InterfaceInfoUpdateRequest>
           type="form"
-          columns={formColumns as ProColumns<API.InterfaceInfoUpdateRequest>[]}
+          columns={[
+            ...(formColumns as ProColumns<API.InterfaceInfoUpdateRequest>[]),
+            ...extraColumns,
+          ]}
           form={{
             initialValues: values,
           }}

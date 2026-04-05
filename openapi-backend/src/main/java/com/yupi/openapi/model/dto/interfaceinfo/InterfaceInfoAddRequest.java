@@ -19,6 +19,7 @@ import java.util.List;
 @Data
 public class InterfaceInfoAddRequest implements Serializable {
 
+
     /**
      * name
      */
@@ -40,6 +41,11 @@ public class InterfaceInfoAddRequest implements Serializable {
     private String method;
 
     /**
+     * requestParams
+     */
+    private String requestParams;
+
+    /**
      * requestHeader
      */
     private String requestHeader;
@@ -48,6 +54,4 @@ public class InterfaceInfoAddRequest implements Serializable {
      * responseHeader
      */
     private String responseHeader;
-
-
 }

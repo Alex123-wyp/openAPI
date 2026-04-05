@@ -26,18 +26,15 @@ public class InterfaceInfoQueryRequest extends PageRequest implements Serializab
 
     private String method;
 
+    private String requestParams;
 
     private String requestHeader;
 
-
     private String responseHeader;
-
 
     private Integer status;
 
-
     private Long userId;
-
 
     private Integer isDelete;
 

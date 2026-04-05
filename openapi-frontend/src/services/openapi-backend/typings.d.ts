@@ -124,6 +124,8 @@ declare namespace API {
     method?: string;
     /** name */
     name?: string;
+    /** request params */
+    requestParams?: string;
     /** request header */
     requestHeader?: string;
     /** response header */
@@ -142,6 +144,7 @@ declare namespace API {
     description?: string;
     method?: string;
     name?: string;
+    requestParams?: string;
     requestHeader?: string;
     responseHeader?: string;
     url?: string;
@@ -154,6 +157,7 @@ declare namespace API {
     isDelete?: number;
     method?: string;
     name?: string;
+    requestParams?: string;
     pageSize?: number;
     requestHeader?: string;
     responseHeader?: string;
@@ -169,6 +173,7 @@ declare namespace API {
     id?: number;
     method?: string;
     name?: string;
+    requestParams?: string;
     requestHeader?: string;
     responseHeader?: string;
     status?: number;

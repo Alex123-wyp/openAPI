@@ -28,11 +28,11 @@ public class InterfaceInfoUpdateRequest implements Serializable {
 
     private String method;
 
+    private String requestParams;
+
     private String requestHeader;
 
     private String responseHeader;
 
     private Integer status;
-
-
 }

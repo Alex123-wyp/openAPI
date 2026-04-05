@@ -33,6 +33,16 @@ public class InterfaceInfo implements Serializable {
     @ApiModelProperty("method")
     private String method;
 
+    /**
+     * params
+     * Example:
+     * [
+     *    {"name":"yupeng","type":"string"}
+     * ]
+     */
+    @ApiModelProperty("request params")
+    private String requestParams;
+
     @ApiModelProperty("request header")
     private String requestHeader;
 

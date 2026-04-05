@@ -76,6 +76,7 @@ create table if not exists interface_info
     description    varchar(256)                           null comment 'description',
     url            varchar(512)                           not null comment 'url',
     method         varchar(256)                           not null comment 'method',
+    requestParams  text                                   not null comment 'request params',
     requestHeader  text                                   null comment 'request header',
     responseHeader text                                   null comment 'response header',
     status         int          default 0                 not null comment 'status',
