@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+// Generate one Java class per message/service instead of nesting everything
+// under a single outer class. This makes the generated code easier to use.
+option java_multiple_files = true;
+// All generated Java types will live in this package.
+option java_package = "com.yupi.openapi.auth.rpc";
+option java_outer_classname = "UserAuthProto";
+
+package userauth;
+
+// This gRPC service is called by the gateway.
+// The gateway only knows an accessKey from the incoming request headers,
+// so it asks the backend to translate that accessKey into the real auth data
+// stored in the user table.
+service UserAuthService {
+  rpc GetUserAuthByAccessKey (GetUserAuthByAccessKeyRequest) returns (GetUserAuthByAccessKeyResponse);
+}
+
+// The gateway sends the caller's accessKey as the lookup key.
+message GetUserAuthByAccessKeyRequest {
+  string access_key = 1;
+}
+
+// The backend returns the minimum data the gateway needs to finish auth:
+// 1. whether the user exists
+// 2. which user matched
+// 3. the secretKey used to recompute the request signature
+// 4. whether the matched user is allowed to invoke APIs
+message GetUserAuthByAccessKeyResponse {
+  bool found = 1;
+  int64 user_id = 2;
+  string access_key = 3;
+  string secret_key = 4;
+  bool active = 5;
+}

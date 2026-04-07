@@ -17,6 +17,7 @@ import com.yupi.openapi.model.enums.InterfaceInfoStatusEnum;
 import com.yupi.openapi.service.InterfaceInfoService;
 import com.yupi.openapi.service.UserService;
 import com.yupi.openapiclientsdk.client.OpenApiClient;
+import com.yupi.openapiclientsdk.exception.OpenApiClientException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -48,7 +49,11 @@ public class InterfaceInfoController {
     @Value("${openapi.client.gateway-host}")
     private String gatewayHost;
 
+    @Value("${openapi.client.connect-timeout-millis:3000}")
+    private int connectTimeoutMillis;
 
+    @Value("${openapi.client.read-timeout-millis:5000}")
+    private int readTimeoutMillis;
 
     // region 增删改查
 
@@ -261,16 +266,22 @@ public class InterfaceInfoController {
         User loginUser = userService.getLoginUser(request);
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
-        OpenApiClient tempApiClient = new OpenApiClient(gatewayHost, accessKey, secretKey);
+
+        OpenApiClient tempApiClient = new OpenApiClient(gatewayHost, accessKey, secretKey, connectTimeoutMillis, readTimeoutMillis);
+
         //Convert json to java object
         Gson gson = new Gson();
         //User.class represents the Class Object of User type, it represents the metadata about the class at runtime, it is runtime class description,
         //fromJson needs runtime type info
         com.yupi.openapiclientsdk.modal.User user = gson.fromJson(userRequestParams, com.yupi.openapiclientsdk.modal.User.class);
-        String usernameByPost = tempApiClient.getUserNameByPost(user);
-        return ResultUtils.success(usernameByPost);
-
-
+        try {
+            //Forward the request to gateway
+            String usernameByPost = tempApiClient.getUserNameByPost(user);
+            return ResultUtils.success(usernameByPost);
+        } catch (OpenApiClientException e) {
+            log.error("Gateway invoke failed, interfaceInfoId={}, userId={}", id, loginUser.getId(), e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Gateway invoke failed");
+        }
     }
 
 }

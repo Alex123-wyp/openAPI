@@ -12,10 +12,12 @@ public class OpenApiClientConfig {
     private String accessKey;
     private String secretKey;
     private String gatewayHost;
+    private int connectTimeoutMillis = OpenApiClient.DEFAULT_CONNECT_TIMEOUT_MILLIS;
+    private int readTimeoutMillis = OpenApiClient.DEFAULT_READ_TIMEOUT_MILLIS;
 
     @Bean
     public OpenApiClient openApiClient() {
-        return new OpenApiClient(gatewayHost, accessKey, secretKey);
+        return new OpenApiClient(gatewayHost, accessKey, secretKey, connectTimeoutMillis, readTimeoutMillis);
     }
 
 }

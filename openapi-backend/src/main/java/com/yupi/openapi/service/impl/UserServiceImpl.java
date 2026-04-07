@@ -10,6 +10,7 @@ import com.yupi.openapi.common.ErrorCode;
 import com.yupi.openapi.constant.CommonConstant;
 import com.yupi.openapi.exception.BusinessException;
 import com.yupi.openapi.mapper.UserMapper;
+import com.yupi.openapi.model.dto.auth.UserAuthInfo;
 import com.yupi.openapi.model.dto.user.UserQueryRequest;
 import com.yupi.openapi.model.entity.User;
 import com.yupi.openapi.model.enums.UserRoleEnum;
@@ -242,5 +243,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    @Override
+    public UserAuthInfo getUserAuthInfoByAccessKey(String accessKey) {
+        if (StringUtils.isBlank(accessKey)) {
+            return null;
+        }
+        // Only fetch the columns the gateway auth flow actually needs.
+        // This keeps the lookup lightweight and avoids exposing unrelated data.
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "accessKey", "secretKey", "userRole");
+        queryWrapper.eq("accessKey", accessKey);
+        queryWrapper.last("limit 1");
+        User user = this.getOne(queryWrapper, false);
+        if (user == null) {
+            return null;
+        }
+        // In this project, banned users exist in the table but must not pass auth.
+        boolean active = !UserRoleEnum.BAN.getValue().equals(user.getUserRole());
+        return new UserAuthInfo(user.getId(), user.getAccessKey(), user.getSecretKey(), active);
     }
 }

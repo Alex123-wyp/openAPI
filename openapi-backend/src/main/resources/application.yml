@@ -82,7 +82,11 @@ knife4j:
         api-rule-resources:
           - com.yupi.openapi.controller
 openapi:
+  auth-grpc:
+    port: 9091
   client:
     access-key: ak_a6ec8ee09db3066c63aebc4980d3bb2b
     secret-key: sk_954ee91d44875f13f21610af5432f59ba089db9d8c5a4ed8
-    gateway-host: http://localhost:8123
+    gateway-host: http://127.0.0.1:8283
+    connect-timeout-millis: 3000
+    read-timeout-millis: 5000
