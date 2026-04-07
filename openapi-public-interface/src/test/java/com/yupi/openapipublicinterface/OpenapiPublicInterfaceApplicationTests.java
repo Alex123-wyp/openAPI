@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class OpenapiPublicInterfaceApplicationTests {
 
+
+
     @Resource
     private OpenApiClient openApiClient;
 
@@ -21,4 +23,5 @@ class OpenapiPublicInterfaceApplicationTests {
         System.out.println(result);
         System.out.println(userNameBypost);
     }
+
 }

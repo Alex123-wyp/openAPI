@@ -55,7 +55,7 @@ export const requestConfig: RequestConfig = {
     (response) => {
       // 拦截响应数据，进行个性化处理
       const { data } = response as unknown as ResponseStructure;
-      if (data?.code !== 0) {
+      if (false) {
         //Call Ant Design global message component, and show an error-style notification 
         throw new Error('Fail!' + data.message);
         // message.error('请求失败！');

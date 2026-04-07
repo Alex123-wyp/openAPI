@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Dubbo Spring Boot Provider" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="dubbo-samples-spring-boot-provider" />
+    <option name="ACTIVE_PROFILES" value="" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+    <option name="ENABLE_DEBUG_OUTPUT" value="false" />
+    <option name="SHORTEN_COMMAND_LINE" value="NONE" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.apache.dubbo.springboot.demo.provider.ProviderApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

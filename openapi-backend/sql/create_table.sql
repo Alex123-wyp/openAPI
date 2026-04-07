@@ -85,3 +85,17 @@ create table if not exists interface_info
     updateTime     datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment 'updated time',
     isDelete       tinyint      default 0                 not null comment 'is deleted'
 ) comment 'interface info' collate = utf8mb4_unicode_ci;
+
+-- User interface relationship table
+create table if not exists user_interface_info
+(
+    id              bigint auto_increment comment 'primary key' primary key,
+    userId          bigint                                 not null comment 'invoking user id',
+    interfaceInfoId bigint                                 not null comment 'interface id',
+    totalNum        int      default 0                     not null comment 'total invocation count',
+    leftNum         int      default 0                     not null comment 'remaining invocation count',
+    status          int      default 0                     not null comment 'status: 0-active, 1-disabled',
+    createTime      datetime default CURRENT_TIMESTAMP     not null comment 'created time',
+    updateTime      datetime default CURRENT_TIMESTAMP     not null on update CURRENT_TIMESTAMP comment 'updated time',
+    isDelete        tinyint  default 0                     not null comment 'is deleted (0-not deleted, 1-deleted)'
+) comment 'user interface relationship' collate = utf8mb4_unicode_ci;

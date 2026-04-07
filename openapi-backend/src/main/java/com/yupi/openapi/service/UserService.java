@@ -2,6 +2,7 @@ package com.yupi.openapi.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yupi.openapi.model.dto.auth.UserAuthInfo;
 import com.yupi.openapi.model.dto.user.UserQueryRequest;
 import com.yupi.openapi.model.entity.User;
 import com.yupi.openapi.model.vo.LoginUserVO;
@@ -108,5 +109,13 @@ public interface UserService extends IService<User> {
      * @return
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
+    /**
+     * Fetch the auth information used by the gateway to validate signatures.
+     *
+     * @param accessKey caller access key
+     * @return matching auth info, or null if the access key does not exist
+     */
+    UserAuthInfo getUserAuthInfoByAccessKey(String accessKey);
 
 }

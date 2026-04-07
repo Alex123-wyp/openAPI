@@ -26,6 +26,7 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
+        <module name="openapi-gateway" />
         <module name="openapi-public-interface" />
       </profile>
     </annotationProcessing>
@@ -34,6 +35,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="openapi-backend" options="-parameters" />
       <module name="openapi-client-sdk" options="-parameters" />
+      <module name="openapi-gateway" options="-parameters" />
       <module name="openapi-public-interface" options="-parameters" />
     </option>
   </component>

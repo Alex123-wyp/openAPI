@@ -6,6 +6,7 @@
       <list>
         <option value="$PROJECT_DIR$/openapi-backend/pom.xml" />
         <option value="$PROJECT_DIR$/openapi-client-sdk/pom.xml" />
+        <option value="$PROJECT_DIR$/openapi-gateway/pom.xml" />
         <option value="$PROJECT_DIR$/openapi-public-interface/pom.xml" />
       </list>
     </option>

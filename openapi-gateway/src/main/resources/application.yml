@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: openapi-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowedOriginPatterns:
+                  - "http://localhost:*"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders:
+                  - "*"
+                allowCredentials: true
+                exposedHeaders:
+                  - "*"
+server:
+  port: 8283
+
+openapi:
+  auth-grpc:
+    host: 127.0.0.1
+    port: 9091
+    deadline-millis: 500
+
+logging:
+  level:
+    org.springframework: INFO
