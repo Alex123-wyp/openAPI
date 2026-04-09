@@ -1,39 +1,115 @@
 # Open API Platform
 
-An API testing and management platform I designed and built end to end, with a microservices-style architecture and distributed request control.
+An end-to-end API management and invocation platform that combines a React admin console, a Spring Cloud Gateway traffic layer, backend management services, a public interface service, and a reusable Java SDK.
 
-This project started when I was working at my last company in China. The original goal was simple but important: help internal team members test APIs faster, more safely, and with less back-and-forth between frontend, backend, and QA. After proving the value internally, I redesigned the architecture to make the platform more open, more modular, and easier to extend for developers anywhere in the world.
+I originally built this project to solve a real internal team problem: API testing and sharing were too manual, too error-prone, and too fragmented across frontend, backend, and QA. I later redesigned it into a more modular, public-facing platform that demonstrates system design, distributed request control, and product thinking, not just dashboard CRUD.
 
-What makes this project special to me is that I did not just build a CRUD dashboard. I designed the full architecture myself, including the gateway, backend services, SDK, gRPC communication, distributed quota control, and the user-facing management console.
+## Table of Contents
 
-## Why I Built It
+- [Project Overview](#project-overview)
+- [Product Walkthrough](#product-walkthrough)
+- [Core Features](#core-features)
+- [Architecture](#architecture)
+- [Module Breakdown](#module-breakdown)
+- [Typical Request Flow](#typical-request-flow)
+- [Engineering Decisions](#engineering-decisions)
+- [Tech Stack](#tech-stack)
+- [Local Development](#local-development)
+- [Interview Talking Points](#interview-talking-points)
+- [What I Would Improve Next](#what-i-would-improve-next)
 
-In many teams, API testing is still surprisingly manual:
+## Project Overview
 
-- people pass raw URLs around in chat
-- signatures and auth headers are easy to get wrong
-- quota and invoke tracking are disconnected from the gateway
-- internal APIs are hard to expose safely to a broader audience
+Open API Platform is designed to make API publishing, testing, invocation, and quota management easier for both internal teams and external developers.
 
-I built Open API Platform to solve that in a structured way:
+Instead of passing raw URLs around and manually rebuilding signatures for every request, the platform provides:
 
-- provide a clean interface catalog
-- let users test APIs through a unified entrypoint
-- centralize authentication and request verification
-- control per-user invoke quotas
-- give admins visibility into interface usage
-- package the invocation logic into an SDK so consumers do not need to rebuild signing logic themselves
+- a central API catalog for discovery
+- a management console for admins and users
+- a unified gateway for routing and verification
+- backend-controlled authentication and quota management
+- a Java SDK that hides signing and request-building complexity
+- analysis pages for monitoring interface usage
 
-## Project Highlights
+This is the kind of project I like building most: one grounded in a practical workflow problem, but implemented with enough architectural depth to show backend engineering and distributed-system thinking.
 
-- Designed a microservices-style multi-module architecture instead of a monolith, separating gateway, management backend, public interface service, SDK, and shared RPC contract.
-- Built a gRPC-based auth and quota pipeline between gateway and backend, so the gateway does not depend on hardcoded credentials.
-- Implemented reserve / commit / rollback quota control to avoid over-consuming invoke counts under concurrent access.
-- Designed a distributed request path where auth, routing, quota, and execution are handled by different services with clear responsibilities.
-- Added a reusable Java client SDK so downstream consumers can call platform APIs with consistent signing, timeout handling, and error boundaries.
-- Built a React + Ant Design management console for login, interface management, invoke analysis, and admin operations.
-- Added file upload support for user avatars and profile assets.
-- Reworked the project branding and developer experience to make it suitable as a public-facing portfolio project.
+## Product Walkthrough
+
+The screenshots below show the platform from login through interface discovery, admin management, online testing, and usage analysis.
+
+### 1. Login Experience
+
+The platform starts with a clean branded login page. This screen is intentionally simple so users can get into the system quickly without friction.
+
+![Login Page](docs/screenshots/login-page.png)
+
+What this screen demonstrates:
+
+- a dedicated platform identity instead of a generic scaffold
+- a focused authentication flow for admin and user accounts
+- a polished first-touch experience for portfolio and demo use
+
+### 2. Interface Catalog
+
+After login, users can browse the available API interfaces through a unified catalog page. This page acts as the discovery layer for consumers who want to inspect what APIs are available before invoking them.
+
+![Interface Catalog](docs/screenshots/interface-catalog.png)
+
+What this page demonstrates:
+
+- centralized interface discovery
+- a simple list-based browsing experience
+- the consumer-facing side of the platform
+
+### 3. API Detail and Online Test Page
+
+Each interface has a dedicated detail page where users can inspect metadata and perform online testing. This helps bridge the gap between API documentation and actual invocation.
+
+![API Detail and Online Test](docs/screenshots/interface-detail-and-test.png)
+
+What this page demonstrates:
+
+- interface metadata display
+- inline testing workflow
+- a smoother developer experience than manually constructing requests outside the platform
+
+### 4. Admin Interface Management
+
+Admins can manage interface records from a dedicated management page. This includes listing interfaces, reviewing their status, and performing operations such as editing, publishing, taking offline, and deleting.
+
+![Interface Management](docs/screenshots/interface-management.png)
+
+What this page demonstrates:
+
+- admin-side interface lifecycle management
+- interface status control
+- the operational side of the platform, not just the consumer UI
+
+### 5. Usage Analysis
+
+The analysis page visualizes interface invocation distribution so admins can quickly understand which APIs are seeing the most traffic.
+
+![Interface Analysis](docs/screenshots/interface-analysis.png)
+
+What this page demonstrates:
+
+- basic operational analytics
+- interface-level visibility
+- how the platform supports both execution and management feedback loops
+
+## Core Features
+
+- User login, registration, logout, and profile management
+- Interface catalog for browsing published APIs
+- Online API detail and testing page
+- Admin interface management with status control
+- Gateway-based request forwarding
+- Signature verification using `accessKey` and `secretKey`
+- Per-user invoke quota management
+- Usage analysis for top-invoked interfaces
+- Java SDK for easier downstream integration
+- gRPC communication between gateway and backend services
+- File upload support for avatars and profile assets
 
 ## Architecture
 
@@ -44,127 +120,99 @@ flowchart LR
     G --> P["Public Interface Service<br/>API execution target"]
     B <--> R["MySQL"]
     B --> C["Tencent COS"]
-    G -. gRPC auth + quota .-> B
+    G -. "gRPC auth + quota" .-> B
     S["Java Client SDK"] --> G
 ```
 
-### Module Breakdown
+This architecture separates management, routing, execution, and integration concerns into dedicated modules. That separation is what makes the project more than a single admin dashboard.
 
-- `openapi-frontend`
-  - React + Umi management console
-  - login/register, admin pages, interface analysis, profile/avatar flow
+## Module Breakdown
 
-- `openapi-gateway`
-  - unified traffic entrypoint
-  - routes `/api/name/**` to the public interface service
-  - routes management APIs to the backend
-  - verifies signatures before forwarding requests
-  - checks quota before invocation and finalizes it after response completion
+### `openapi-frontend`
 
-- `openapi-backend`
-  - core management system
-  - user management, interface management, quota data, analysis APIs, file upload
-  - hosts the gRPC services used by the gateway
+- React + Umi management console
+- login, user flows, interface pages, admin pages, analysis dashboard
 
-- `openapi-public-interface`
-  - real API execution service
-  - receives traffic forwarded by the gateway
+### `openapi-gateway`
 
-- `openapi-client-sdk`
-  - reusable Java SDK for calling platform APIs
-  - wraps signing, request building, and error handling
+- unified traffic entry point
+- validates request metadata and signatures
+- forwards requests to downstream services
+- coordinates quota lifecycle around invocation
 
-- `openapi-auth-rpc`
-  - shared gRPC contract module
-  - keeps gateway and backend on the same RPC request/response definitions
+### `openapi-backend`
 
-## Microservices and Distributed System Perspective
+- core business system
+- user, interface, quota, and analysis management
+- gRPC provider for gateway auth and quota checks
+- file upload support
 
-I describe this project as a microservices-style platform because different parts of the request lifecycle are intentionally separated:
+### `openapi-public-interface`
 
-- the frontend handles management and visibility
-- the gateway owns routing, verification, and traffic control
-- the backend owns business data, auth truth, quota state, and analysis
-- the public interface service owns real API execution
-- the SDK acts as a consumer-facing integration layer
+- actual API execution target
+- receives forwarded calls from the gateway
 
-From a distributed-system point of view, the interesting part is not just "multiple services exist". The important part is how they cooperate safely:
+### `openapi-client-sdk`
 
-- the gateway does not keep auth secrets locally and instead asks the backend through gRPC
-- quota is reserved before execution and finalized after execution, which is safer than naive counter updates
-- the protobuf contract is shared to reduce cross-service drift
-- failures are translated cleanly across layers: backend exception -> gRPC error -> gateway HTTP response
-- service boundaries are explicit, so responsibilities stay clear as the system grows
+- reusable Java SDK
+- wraps signing and request-building logic
+- reduces repeated integration effort for API consumers
 
-## Engineering Decisions I’m Proud Of
+### `openapi-auth-rpc`
 
-### 1. Gateway auth backed by gRPC, not hardcoded secrets
-
-The gateway receives `accessKey`, `nonce`, `timestamp`, `body`, and `sign` from the caller.  
-Instead of storing secrets inside the gateway, it asks the backend through gRPC for the user’s auth info. That keeps the backend as the source of truth and makes the gateway safer and easier to evolve.
-
-### 2. Quota control with reserve / commit / rollback
-
-I did not want invoke counting to be “best effort”.
-
-So the gateway:
-
-1. reserves quota before forwarding the request
-2. forwards the request to the public interface
-3. commits quota on success
-4. rolls it back on downstream failure
-
-This design is much more reliable than simply incrementing counters after the fact, especially under concurrency.
-
-It is also one of the clearest distributed-system decisions in the project, because it treats cross-service request completion as a state transition problem instead of a simple database update.
-
-### 3. Shared RPC contract for cross-service consistency
-
-I split the gRPC protobuf contract into its own Maven module so backend and gateway share the same generated classes. This prevents DTO drift and keeps service contracts explicit.
-
-### 4. SDK as a product, not just a helper
-
-I built a dedicated client SDK so users of the platform do not have to handcraft signatures or HTTP calls every time. This turns the platform from “an internal tool” into “something other developers can integrate with”.
-
-## Core Features
-
-- User login, registration, logout, and profile management
-- Default avatar support and avatar upload
-- Interface catalog and interface lifecycle management
-- Online/offline interface status control
-- Gateway-based API forwarding
-- Signature verification with `accessKey` / `secretKey`
-- Per-user interface quota management
-- Invoke analytics for top-used interfaces
-- Java SDK for simplified API invocation
-- gRPC service communication between gateway and backend
+- shared protobuf and gRPC contract module
+- keeps gateway and backend service communication consistent
 
 ## Typical Request Flow
 
-1. A client or SDK sends a signed request to the gateway.
-2. The gateway validates timestamp, nonce, and request headers.
-3. The gateway calls backend gRPC to look up the user by `accessKey`.
-4. The gateway recomputes the signature with the backend-provided `secretKey`.
-5. The gateway asks backend gRPC to reserve invoke quota.
-6. If quota is available, the gateway forwards the request to the public interface service.
-7. On success, quota is committed.
-8. On failure, quota is rolled back.
+1. A client application or the Java SDK sends a signed request to the gateway.
+2. The gateway validates required headers such as `accessKey`, `nonce`, `timestamp`, `body`, and `sign`.
+3. The gateway calls backend gRPC to look up the caller by `accessKey`.
+4. The gateway recomputes the signature using the backend-provided `secretKey`.
+5. The gateway asks the backend to reserve invoke quota.
+6. If quota is available, the request is forwarded to the public interface service.
+7. On success, the invoke count is committed.
+8. On failure, the quota reservation is rolled back.
 
-This is one of the parts I like most in interviews because it shows distributed system thinking, not just page-building.
+This flow is one of the strongest parts of the project because it shows how service boundaries, authentication, and quota control work together across modules.
+
+## Engineering Decisions
+
+### 1. gRPC-backed gateway authentication
+
+The gateway does not store hardcoded auth truth locally. Instead, it delegates user credential lookup to the backend through gRPC. This keeps the backend as the source of truth and reduces coupling in the traffic layer.
+
+### 2. Reserve / commit / rollback quota control
+
+Instead of treating invoke counting as a best-effort afterthought, the project models it as a state transition:
+
+1. reserve quota before execution
+2. commit on success
+3. rollback on failure
+
+This is safer than naive counter updates and better reflects real distributed failure handling.
+
+### 3. Shared RPC contract module
+
+The protobuf contract lives in its own Maven module so the backend and gateway share the same generated types. This reduces drift and keeps cross-service contracts explicit.
+
+### 4. SDK as part of the product
+
+The Java SDK is not just a convenience helper. It is part of the platform design. It turns invocation from a manual request-building exercise into a cleaner consumer integration experience.
 
 ## Tech Stack
 
 ### Backend
 
-- Java 8 / 17 / 21 across modules
+- Java 8 / 17 / 21 across different modules
 - Spring Boot
 - Spring Cloud Gateway
-- MyBatis + MyBatis-Plus
+- MyBatis and MyBatis-Plus
 - gRPC
 - MySQL
-- Redis / Spring Session support
+- Redis and Spring Session support
 - Tencent COS
-- Knife4j / OpenAPI docs
+- Knife4j / OpenAPI documentation tooling
 
 ### Frontend
 
@@ -179,7 +227,7 @@ This is one of the parts I like most in interviews because it shows distributed 
 
 ### Default Ports
 
-- Frontend: Umi dev server
+- Frontend: Umi development server
 - Gateway: `8283`
 - Backend: `8101`
 - Backend gRPC: `9091`
@@ -187,22 +235,20 @@ This is one of the parts I like most in interviews because it shows distributed 
 
 ### Backend Setup
 
-1. Configure MySQL in [application.yml](/Users/wangyupeng/githubProject/openAPI/openapi-backend/src/main/resources/application.yml).
-2. Run:
-   - [01_create_current_tables.sql](/Users/wangyupeng/githubProject/openAPI/openapi-backend/sql/01_create_current_tables.sql)
-   - [02_insert_sample_data.sql](/Users/wangyupeng/githubProject/openAPI/openapi-backend/sql/02_insert_sample_data.sql)
-3. Start `openapi-auth-rpc`, `openapi-backend`, `openapi-gateway`, and `openapi-public-interface` as needed.
-
-### Sample Accounts
-
-- Admin: `admin_demo`
-- Demo user: `demo_user`
-- Password: `12345678`
+1. Configure MySQL in [`openapi-backend/src/main/resources/application.yml`](openapi-backend/src/main/resources/application.yml).
+2. Run the SQL initialization scripts:
+   - [`openapi-backend/sql/01_create_current_tables.sql`](openapi-backend/sql/01_create_current_tables.sql)
+   - [`openapi-backend/sql/02_insert_sample_data.sql`](openapi-backend/sql/02_insert_sample_data.sql)
+3. Start the required backend modules:
+   - `openapi-auth-rpc`
+   - `openapi-backend`
+   - `openapi-gateway`
+   - `openapi-public-interface`
 
 ### Frontend Setup
 
 ```bash
-cd /Users/wangyupeng/githubProject/openAPI/openapi-frontend
+cd openapi-frontend
 npm install
 npm run start:dev
 ```
@@ -210,38 +256,40 @@ npm run start:dev
 ### Workspace Build
 
 ```bash
-cd /Users/wangyupeng/githubProject/openAPI
 mvn clean install -DskipTests
 ```
 
+### Sample Accounts
+
+- Admin: `admin_demo`
+- Demo user: `demo_user`
+- Password: `12345678`
+
 ## Interview Talking Points
 
-If I were introducing this project in an interview, I would focus on these points:
-
-- I identified a real internal productivity problem and built a platform around it.
-- I designed the architecture myself instead of only implementing assigned tickets.
-- I separated management, traffic routing, API execution, SDK, and service contract concerns into dedicated services/modules.
-- I used gRPC where low-latency backend-to-gateway communication made sense, instead of coupling everything through direct database access.
-- I thought about distributed correctness under failure by adding quota reserve / commit / rollback.
-- I can explain the full request path across multiple services, including auth lookup, signature verification, quota reservation, forwarding, and final state reconciliation.
-- I turned an internal company tool into a more polished public-facing product.
+- I identified a real team workflow problem and turned it into a complete platform.
+- I designed the architecture across gateway, backend, SDK, and public interface layers instead of only building individual pages.
+- I used gRPC where service-to-service communication benefits from a strongly typed, low-latency contract.
+- I modeled quota handling as a distributed state transition problem rather than a basic counter increment.
+- I can explain the full request path from frontend or SDK, through gateway verification, backend auth lookup, quota reservation, forwarding, and result finalization.
+- I built both product-facing UI and deeper backend infrastructure, which shows breadth as well as depth.
 
 ## What I Would Improve Next
 
-- Add automated integration tests for the full gateway -> gRPC -> public interface flow
-- Add observability dashboards and request tracing
-- Add stronger tenant / organization support
-- Add rate limiting and richer API publishing workflows
+- Add end-to-end integration tests for the full gateway -> gRPC -> public interface flow
+- Add request tracing and observability dashboards
+- Add stronger tenant and organization support
+- Add richer API publishing workflows
 - Add Docker Compose for one-command local startup
+- Expand analytics beyond the current top-invocation view
 
 ## Personal Note
 
-This project means a lot to me because it reflects how I think as an engineer:
+This project represents how I like to work as an engineer:
 
-- start from a real problem
-- design the system, not just the page
-- care about correctness, maintainability, and developer experience
-- keep improving the product beyond the first internal version
+- start from a real operational problem
+- design the system, not just the screen
+- care about correctness and developer experience together
+- keep improving a useful internal tool until it becomes something worth showcasing publicly
 
-I originally built it to help my teammates.  
-Now I’m proud to show it as a project that represents my architecture thinking, backend depth, and product ownership.
+It began as something to help teammates move faster. It has since become one of the best examples of my system design, backend engineering, and product ownership.
