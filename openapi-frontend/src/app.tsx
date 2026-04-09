@@ -16,6 +16,9 @@ import { getLoginUserUsingGet } from './services/openapi-backend/userController'
 const isDev = process.env.NODE_ENV === 'development';
 const isDevOrTest = isDev || process.env.CI;
 const loginPath = '/user/login';
+const defaultAvatarSrc = '/default-avatar.jpg';
+const appLogoSrc = '/api_icon.png';
+const appTitle = 'Open API Platform';
 
 /**
  * @see https://umijs.org/docs/api/runtime-config#getinitialstate
@@ -77,13 +80,50 @@ export const layout: RunTimeLayoutConfig = ({
   initialState,
   setInitialState,
 }) => {
+  const avatarSrc = initialState?.loginUser?.userAvatar?.trim() || defaultAvatarSrc;
+  const renderBrand = () => (
+    <Link
+      key="app-brand"
+      to="/"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        color: 'inherit',
+        textDecoration: 'none',
+      }}
+    >
+      <img
+        alt={appTitle}
+        src={appLogoSrc}
+        style={{
+          width: 32,
+          height: 32,
+          objectFit: 'contain',
+        }}
+      />
+      <span
+        style={{
+          fontSize: 18,
+          fontWeight: 600,
+          lineHeight: '24px',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {appTitle}
+      </span>
+    </Link>
+  );
+
   return {
+    logo: appLogoSrc,
+    title: appTitle,
     actionsRender: () => [
       <Question key="doc" />,
       <SelectLang key="SelectLang" />,
     ],
     avatarProps: {
-      src: initialState?.loginUser?.userAvatar,
+      src: avatarSrc,
       title: <AvatarName />,
       render: (_, avatarChildren) => (
         <AvatarDropdown>{avatarChildren}</AvatarDropdown>
@@ -128,7 +168,8 @@ export const layout: RunTimeLayoutConfig = ({
           </Link>,
         ]
       : [],
-    menuHeaderRender: undefined,
+    menuHeaderRender: () => renderBrand(),
+    headerTitleRender: () => renderBrand(),
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态

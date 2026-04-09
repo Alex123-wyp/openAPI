@@ -17,6 +17,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseListListTopInvokerInterfaceInfoVO_ = {
+    code?: number;
+    data?: ListTopInvokerInterfaceInfoVO[];
+    message?: string;
+  };
+
   type BaseResponseLoginUserVO_ = {
     code?: number;
     data?: LoginUserVO;
@@ -193,6 +199,8 @@ declare namespace API {
     status?: number;
     url?: string;
   };
+
+  type ListTopInvokerInterfaceInfoVO = true;
 
   type LoginUserVO = {
     createTime?: string;

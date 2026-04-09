@@ -1,6 +1,6 @@
 export default {
   'pages.layouts.userLayout.title':
-    'Ant Design is the most influential web design specification in Xihu district',
+    'Build, manage, and invoke your APIs in one place.',
   'pages.login.accountLogin.tab': 'Account Login',
   'pages.login.accountLogin.errorMessage':
     'Incorrect username/password(admin/ant.design)',
@@ -24,6 +24,20 @@ export default {
   'pages.login.submit': 'Login',
   'pages.login.loginWith': 'Login with :',
   'pages.login.registerAccount': 'Register Account',
+  'pages.login.register.title': 'Create Account',
+  'pages.login.register.submit': 'Register',
+  'pages.login.register.switch': 'Create an account',
+  'pages.login.register.backToLogin': 'Back to login',
+  'pages.login.register.username.placeholder': 'Choose a username',
+  'pages.login.register.username.required': 'Please input a username!',
+  'pages.login.register.password.placeholder': 'Create a password',
+  'pages.login.register.password.required': 'Please input a password!',
+  'pages.login.register.confirmPassword.placeholder': 'Confirm your password',
+  'pages.login.register.confirmPassword.required':
+    'Please confirm your password!',
+  'pages.login.register.passwordMismatch': 'Passwords do not match.',
+  'pages.login.register.success': 'Registration successful! Please log in.',
+  'pages.login.register.failure': 'Registration failed, please try again!',
   'pages.welcome.link': 'Welcome',
   'pages.welcome.alertMessage':
     'Faster and stronger heavy-duty components have been released.',

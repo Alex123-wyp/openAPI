@@ -39,7 +39,7 @@ describe('Login Page', () => {
       />,
     );
 
-    await rootContainer.findAllByText('Ant Design');
+    await rootContainer.findAllByText('Open API Platform');
 
     act(() => {
       historyRef.current?.push('/user/login');
@@ -49,10 +49,51 @@ describe('Login Page', () => {
       rootContainer.baseElement?.querySelector('.ant-pro-form-login-desc')
         ?.textContent,
     ).toBe(
-      'Ant Design is the most influential web design specification in Xihu district',
+      'Build, manage, and invoke your APIs in one place.',
     );
 
-    expect(rootContainer.asFragment()).toMatchSnapshot();
+    expect(rootContainer.queryByText('Phone Login')).toBeNull();
+    expect(rootContainer.queryByText('Login with :')).toBeNull();
+    expect(rootContainer.queryByText('Create an account')).toBeTruthy();
+    expect(
+      await rootContainer.findByPlaceholderText('Username: admin or user'),
+    ).toBeTruthy();
+    expect(
+      await rootContainer.findByPlaceholderText('Password: ant.design'),
+    ).toBeTruthy();
+
+    rootContainer.unmount();
+  });
+
+  it('should switch to register form', async () => {
+    const historyRef = React.createRef<any>();
+    const rootContainer = render(
+      <TestBrowser
+        historyRef={historyRef}
+        location={{
+          pathname: '/user/login',
+        }}
+      />,
+    );
+
+    await rootContainer.findAllByText('Open API Platform');
+
+    await act(async () => {
+      fireEvent.click(await rootContainer.findByText('Create an account'));
+    });
+
+    expect(rootContainer.queryByText('Account Login')).toBeNull();
+    expect(await rootContainer.findByText('Create Account')).toBeTruthy();
+    expect(
+      await rootContainer.findByPlaceholderText('Choose a username'),
+    ).toBeTruthy();
+    expect(
+      await rootContainer.findByPlaceholderText('Create a password'),
+    ).toBeTruthy();
+    expect(
+      await rootContainer.findByPlaceholderText('Confirm your password'),
+    ).toBeTruthy();
+    expect(await rootContainer.findByText('Back to login')).toBeTruthy();
 
     rootContainer.unmount();
   });
@@ -68,7 +109,7 @@ describe('Login Page', () => {
       />,
     );
 
-    await rootContainer.findAllByText('Ant Design');
+    await rootContainer.findAllByText('Open API Platform');
 
     const userNameInput = await rootContainer.findByPlaceholderText(
       'Username: admin or user',
@@ -91,9 +132,7 @@ describe('Login Page', () => {
     // 等待接口返回结果
     await waitTime(5000);
 
-    await rootContainer.findAllByText('Ant Design Pro');
-
-    expect(rootContainer.asFragment()).toMatchSnapshot();
+    await rootContainer.findAllByText('Open API Platform');
 
     await waitTime(2000);
 

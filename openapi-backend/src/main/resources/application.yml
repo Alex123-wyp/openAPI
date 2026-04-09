@@ -1,54 +1,48 @@
-# 公共配置文件
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
+# Shared configuration file
+# @author <a href="https://github.com/liyupi">Programmer Yupi</a>
+# @from <a href="https://yupi.icu">Code Navigation Community</a>
 spring:
   application:
     name: openapi-backend
-  # 默认 dev 环境
+  # Default dev profile
   profiles:
     active: dev
-  # 支持 swagger3
+  # Enable Swagger 3
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-  # session 配置
+  # Session configuration
   session:
-    # todo 取消注释开启分布式 session（须先配置 Redis）
+    # todo Uncomment to enable distributed session storage (configure Redis first).
     # store-type: redis
-    # 30 天过期
+    # Expires in 30 days
     timeout: 2592000
-  # 数据库配置
-  # todo 需替换配置
+  # Database configuration
+  # TODO: replace with your own configuration
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/open_api
     username: root
     password: 123456
-  # Redis 配置
-  # todo 需替换配置，然后取消注释
+  # Redis configuration
+  # TODO: replace with your own configuration, then uncomment
 #  redis:
 #    database: 1
 #    host: localhost
 #    port: 6379
 #    timeout: 5000
 #    password: 123456
-  # Elasticsearch 配置
-  # todo 需替换配置，然后取消注释
-#  elasticsearch:
-#    uris: http://localhost:9200
-#    username: root
-#    password: 123456
-  # 文件上传
+  # File upload
   servlet:
     multipart:
-      # 大小限制
+      # Size limit
       max-file-size: 10MB
 server:
   address: 0.0.0.0
   port: 8101
   servlet:
     context-path: /api
-    # cookie 30 天过期
+    # Cookie expires in 30 days
     session:
       cookie:
         max-age: 2592000
@@ -58,29 +52,29 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
-      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
-      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+      logic-delete-field: isDelete # Global logic-delete field name
+      logic-delete-value: 1 # Logic-deleted value (default 1)
+      logic-not-delete-value: 0 # Logic-not-deleted value (default 0)
 
-# 对象存储
-# todo 需替换配置
+# Object storage
+# TODO: replace with your own configuration
 cos:
   client:
     accessKey: xxx
     secretKey: xxx
     region: xxx
     bucket: xxx
-# 接口文档配置
+# API documentation configuration
 knife4j:
   enable: true
   openapi:
-    title: "接口文档"
+    title: "API Documentation"
     version: 1.0
     group:
       default:
         api-rule: package
         api-rule-resources:
-          - com.yupi.openapi.controller
+          - com.yupeng.openapi.controller
 openapi:
   auth-grpc:
     port: 9091

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yupi</groupId>
+    <groupId>com.yupeng</groupId>
     <artifactId>openapi-auth-rpc</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>

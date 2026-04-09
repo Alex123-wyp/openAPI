@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yupi.openapi.mapper.UserInterfaceInfoMapper">
+<mapper namespace="com.yupeng.openapi.mapper.UserInterfaceInfoMapper">
 
-    <resultMap id="BaseResultMap" type="com.yupi.openapi.model.entity.UserInterfaceInfo">
+    <resultMap id="BaseResultMap" type="com.yupeng.openapi.model.entity.UserInterfaceInfo">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="userId" column="userId" jdbcType="BIGINT"/>
         <result property="interfaceInfoId" column="interfaceInfoId" jdbcType="BIGINT"/>
@@ -19,4 +19,8 @@
     <sql id="Base_Column_List">
         id, userId, interfaceInfoId, totalNum, leftNum, status, createTime, updateTime, isDelete
     </sql>
+    <select id="listTopInvokeInterfaceInfo" resultType="com.yupeng.openapi.model.entity.UserInterfaceInfo">
+
+        select interfaceInfoId, sum(totalNum) as totalNum from user_interface_info group by interfaceInfoId order by totalNum desc limit #{limit};
+    </select>
 </mapper>

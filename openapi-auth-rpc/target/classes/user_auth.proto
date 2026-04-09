@@ -4,7 +4,7 @@ syntax = "proto3";
 // under a single outer class. This makes the generated code easier to use.
 option java_multiple_files = true;
 // All generated Java types will live in this package.
-option java_package = "com.yupi.openapi.auth.rpc";
+option java_package = "com.yupeng.openapi.auth.rpc";
 option java_outer_classname = "UserAuthProto";
 
 package userauth;
@@ -15,6 +15,17 @@ package userauth;
 // stored in the user table.
 service UserAuthService {
   rpc GetUserAuthByAccessKey (GetUserAuthByAccessKeyRequest) returns (GetUserAuthByAccessKeyResponse);
+}
+
+// This gRPC service lets the gateway manage invoke quota before and after it
+// forwards a public interface request.
+service InterfaceQuotaService {
+  // Reserve one available invocation slot before the request is forwarded.
+  rpc ReserveInvokeQuota (ReserveInvokeQuotaRequest) returns (ReserveInvokeQuotaResponse);
+  // Mark a reserved invocation as successfully consumed after a 2xx response.
+  rpc CommitInvokeQuota (CommitInvokeQuotaRequest) returns (CommitInvokeQuotaResponse);
+  // Give the reserved slot back if the downstream invocation fails.
+  rpc RollbackInvokeQuota (RollbackInvokeQuotaRequest) returns (RollbackInvokeQuotaResponse);
 }
 
 // The gateway sends the caller's accessKey as the lookup key.
@@ -33,4 +44,38 @@ message GetUserAuthByAccessKeyResponse {
   string access_key = 3;
   string secret_key = 4;
   bool active = 5;
+}
+
+// The gateway identifies the caller by user_id and the target API by
+// request path + HTTP method.
+message ReserveInvokeQuotaRequest {
+  int64 user_id = 1;
+  string request_path = 2;
+  string request_method = 3;
+}
+
+// allowed=false means the caller has no remaining quota or the interface row
+// cannot be resolved. interface_info_id is returned so the gateway can later
+// commit or roll back the same reserved invocation.
+message ReserveInvokeQuotaResponse {
+  bool allowed = 1;
+  int64 interface_info_id = 2;
+}
+
+message CommitInvokeQuotaRequest {
+  int64 user_id = 1;
+  int64 interface_info_id = 2;
+}
+
+message CommitInvokeQuotaResponse {
+  bool success = 1;
+}
+
+message RollbackInvokeQuotaRequest {
+  int64 user_id = 1;
+  int64 interface_info_id = 2;
+}
+
+message RollbackInvokeQuotaResponse {
+  bool success = 1;
 }
